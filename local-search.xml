@@ -4,32 +4,27 @@
   
   
   <entry>
-    <title>测试文章</title>
-    <link href="/2022/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/"/>
-    <url>/2022/01/21/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0/</url>
+    <title>微信小程序任意用户登录</title>
+    <link href="/2022/01/21/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/"/>
+    <url>/2022/01/21/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/</url>
     
-    <content type="html"><![CDATA[<p>​    asdaSDASDAdsas</p><p><img src="image-20220121195027102.png" alt="image-20220121195027102"></p>]]></content>
+    <content type="html"><![CDATA[<h1 id="小程序登陆方式"><a href="#小程序登陆方式" class="headerlink" title="小程序登陆方式"></a>小程序登陆方式</h1><p>一个APP有时候需要绑定用户手机，获取用户身份等操作，以手机号为例，正常开发Web应用的时候，如果要用户绑定、修改自己手机号，是需要验证手机号是否归属于该用户，通常会使用短信认证的方式。但是在微信中，因为有微信官方的背书，所以获取手机号的时候是不需要短信验证的，通常流程是，弹出一个登陆框，用户可以选择“微信手机号快捷登陆”，确认以后小程序端就能拿到手机号。</p><p><img src="image-20220121201204359.png" alt="image-20220121201204359"></p><h1 id="泄露session-key的影响"><a href="#泄露session-key的影响" class="headerlink" title="泄露session_key的影响"></a>泄露session_key的影响</h1><p>如果小程序开发人员在数据包中，将session_key泄露给客户端了，攻击者即可伪造密文或签名，来修改用户信息，如手机号。上述小程序获取手机号的最后一步，就是小程序将密文发送给服务端，那么如果攻击者知道session_key，就可以构造任意密文，进而伪造手机号。</p><h1 id="泄露session-key的方式"><a href="#泄露session-key的方式" class="headerlink" title="泄露session_key的方式"></a>泄露session_key的方式</h1><ol><li>如果小程序的appId和appSecret泄露，我们可以通过调用 auth.code2Session 这个API来获取 session_key，这个API是没有IP白名单限制的。&lt;参考：AppID和AppSecret泄露问题<a href="https://blog.csdn.net/qq_27446553/article/details/52191042&gt;">https://blog.csdn.net/qq_27446553/article/details/52191042&gt;</a></li><li>有的服务端可能将服务端API返回的数据直接返回给客户端了，此时其中可能包含session_key</li><li>服务端直接使用session_key作为用户的session id，而不是自己生成一个随机字符串做绑</li></ol><h1 id="获取session-key后的利用"><a href="#获取session-key后的利用" class="headerlink" title="获取session_key后的利用"></a>获取session_key后的利用</h1><p><strong>1. 进入小程序，并抓取此进入过程的相关数据包</strong></p><p><img src="image-20220121201409833.png" alt="image-20220121201409833"></p><p>此处需要注意的是返回session_key的的接口域名和小程序本身的业务接口域名看起来好像没有啥关联，所以测试的时候最好注意一下抓取到的所有接口的返回，或者直接用HaE这个工具直接匹配标记存在session_key的数据包，避免遗漏</p><p><strong>2. 点击“立即登录”，选择微信用户一键登录，此时会自动读取微信绑定的手机号，抓取点击允许后的数据包</strong></p><p><img src="image-20220121201635700.png" alt="image-20220121201635700"></p><p><strong>3. 查看微信官方文档，可知上一步抓取到的加密数据使用的加密算法</strong></p><p><a href="https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/signature.html">服务端获取开放数据 | 微信开放文档 (qq.com)</a></p><p><img src="image-20220121201704094.png" alt="image-20220121201704094"></p><p><strong>4. 解密验证</strong></p><p><img src="image-20220121201812004.png" alt="image-20220121201812004"></p><p><strong>5. 替换任意用户手机号，绕过登录验证</strong></p><p><img src="image-20220121201914827.png" alt="image-20220121201914827"></p><p><img src="image-20220121202018251.png" alt="image-20220121202018251"></p>]]></content>
     
+    
+    <categories>
+      
+      <category>漏洞利用</category>
+      
+    </categories>
     
     
     <tags>
       
-      <tag>aaaa</tag>
+      <tag>原创</tag>
+      
+      <tag>微信小程序渗透</tag>
       
     </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="/2022/01/21/hello-world/"/>
-    <url>/2022/01/21/hello-world/</url>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
-    
-    
     
   </entry>
   
