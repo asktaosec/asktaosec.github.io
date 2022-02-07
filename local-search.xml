@@ -4,31 +4,6 @@
   
   
   <entry>
-    <title>test666</title>
-    <link href="/2022/02/07/test666/"/>
-    <url>/2022/02/07/test666/</url>
-    
-    <content type="html"><![CDATA[<h1 id="InjuredAndroid-Writeup—XSSTEXT"><a href="#InjuredAndroid-Writeup—XSSTEXT" class="headerlink" title="InjuredAndroid Writeup—XSSTEXT"></a>InjuredAndroid Writeup—XSSTEXT</h1><p>该项目是一个Android application靶场，基于漏洞挖掘、漏洞利用，以CTF的形式呈现。</p><blockquote><p><strong>下载地址</strong><br><a href="https://github.com/B3nac/InjuredAndroid">https://github.com/B3nac/InjuredAndroid</a></p></blockquote><h1 id="XSSTEXT"><a href="#XSSTEXT" class="headerlink" title="XSSTEXT"></a>XSSTEXT</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>这一个漏洞示例不需要提交flag。只需要通过分析DispalyPostXSS这个Actvicity的源代码，构造xss payload输入并提交，观察xss paload是否执行成功。</p><h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><h3 id="1-获取当前Activity名称"><a href="#1-获取当前Activity名称" class="headerlink" title="1. 获取当前Activity名称"></a>1. 获取当前Activity名称</h3><p><img src="/images/pasted-3.png" alt="upload successful"></p><p>打开运行目标APP，点击XEETEST进入对应的Activity界面后，执行 以下命令获取当前Activity名称</p><figure class="highlight bash"><table><tr><td class="gutter"><div class="code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><pre><code class="hljs Bash">adb shell dumpsys activity top | findstr ACTIVITY<br></code></pre></td></tr></table></figure><p><img src="/image/image_1.png"></p><h3 id="2-反编译APK"><a href="#2-反编译APK" class="headerlink" title="2. 反编译APK"></a>2. 反编译APK</h3><p>使用反编译工具jadx-gui对目标APK进行反编译，找到上一步获取的Activity源代码进行分析。</p><p><img src="/image/image_2.png"></p><blockquote><p><strong>Android开发知识点补充：</strong><br>通过分析XSSTextActivity的源代码，发现类中只有onCreate以及submitText两个方法：<br>onCreate方法是在当前Acitivity被系统加载时即自动执行，此处onCreate方法中主要执行的代码 setContentView(R.layout.activity_xsstext);是加载布局文件的作用；<br>submitText方法是在XML布局文件中设置回调方法，在Java代码中实现该方法即可在触发相关控件的时候被调用执行（控件事件绑定的3种方式之一）。</p></blockquote><p><img src="/image/image_3.png"></p><p>通过以上分析可知，当我们点击“SUBMIT”按钮的时候，submitText()方法即被调用执行。所以接下来主要看看submitText()方法种主要做了什么操作。</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Java">Intent intent = <span class="hljs-keyword">new</span> Intent(<span class="hljs-keyword">this</span>, DisplayPostXSS.class);<br>intent.putExtra(<span class="hljs-string">&quot;com.b3nac.injuredandroid.DisplayPostXSS&quot;</span>, ((EditText) findViewById(R.id.editText)).getText().toString());<br>startActivity(intent);<br><br></code></pre></td></tr></table></figure><blockquote><p><strong>1. Intent intent &#x3D; new Intent(this, DisplayPostXSS.class)：</strong><br>首先构建出了一个Intent，传入this作为上下文，指的是当前Activity，传入DisplayPostXSS.class作为目标Activity，这样我们的“意图”就非常明显了，即在当前XSSTextActivity这个活动的基础上打开DisplayPostXSS这个Activity，然后通过startActivity这个方法来执行这个intent。<br><strong>2.  intent.putExtra(“com.b3nac.injuredandroid.DisplayPostXSS”, ((EditText) findViewById(R.id.editText)).getText().toString())：</strong><br>intent提供的putExtra方法的作用是向下一个Activity传递数据，方法传入2个参数，第一个是键，第二个是值，因此在下一个Activity中即可通过键来获取对应的数据：<br>** String stringExtra &#x3D; getIntent().getStringExtra(“com.b3nac.injuredandroid.DisplayPostXSS”);**</p></blockquote><p>因此通过以上分析，我们可以知道当我们打开APP，进入XSSTEST界面，在输入框中输入相关内容并点击按钮“SUBMIT”时，APP将用户输入的数据传递给了DisplayPostXSS这个Activity中进行处理。</p><p><img src="/image/image_4.png"></p><blockquote><p><strong>Android开发知识点补充：</strong><br>webview loadData()方法是用来加载一段代码片的。<br>public void loadData(String data,String mimetype,String encoding)；<br><strong>·</strong> String data：代码片段内容<br /><strong>·</strong> String mimeType：代码片段所对应的MIME类型，如果传null，则默认为text&#x2F;html<br /><strong>·</strong> String encoding：代码片段的编码方式</p></blockquote><h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><p>通过以上的分析，即可知道如果用户的输入数据存在传递给webview loadData()方法处理的情况，且未对用户输入进行过滤，即可导致XSS漏洞的产生。</p><p><img src="/image/image_5.png"></p><p><img src="/image/image_6.png"></p>]]></content>
-    
-    
-    <categories>
-      
-      <category>app漏洞利用</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>CTF</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>微信小程序任意用户登录</title>
     <link href="/2022/01/21/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/"/>
     <url>/2022/01/21/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%BB%BB%E6%84%8F%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95/</url>
